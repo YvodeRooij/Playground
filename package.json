@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@langchain/core": "^0.3.43",
+    "@langchain/langgraph": "^0.2.63",
+    "@langchain/openai": "^0.5.4",
+    "@types/uuid": "^10.0.0",
+    "dotenv": "^16.4.7",
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0"
+  }
+}
