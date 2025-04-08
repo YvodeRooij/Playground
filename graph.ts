@@ -64,9 +64,16 @@ builder
         }
     );
 
-// Compile with memory saver to maintain conversation context
+// Instantiate an in-memory checkpointer.
+// This allows the graph state to be saved at each step.
+// For production, you might use a persistent checkpointer (e.g., SqliteSaver, RedisSaver, or a custom one).
+const memory = new MemorySaver(); // TODO: Replace MemorySaver with a persistent checkpointer (e.g., using MongoDB) for production use cases.
+
+// Compile the graph with the checkpointer.
+// The checkpointer is responsible for saving and loading the state of the graph,
+// enabling persistence and resumption of graph executions.
 let graph = builder.compile({
- 
+    checkpointer: memory,
 });
 
 const main = async () => {
@@ -75,11 +82,16 @@ const main = async () => {
     // await client.connect();
     // const db = client.db("your_db_name");
     // const interviewsCollection = db.collection("interviews");
+    // Define a unique identifier for this conversation thread.
+    // Checkpointers use this ID to store and retrieve the state for a specific execution flow.
+    // This allows multiple independent conversations to run concurrently using the same graph definition.
+    const threadId = uuidv4(); // Generate a unique ID for this run
+    const config = { configurable: { thread_id: threadId } };
+
     // Start the conversation with an empty message list.
-    // The interviewer node will add its system prompt first.
-    const result = await graph.invoke({
-        messages: []
-    });
+    // Pass the config object with the thread_id to invoke.
+    // The checkpointer will automatically save the state associated with this thread_id after each step.
+    const result = await graph.invoke({ messages: [] }, config);
     
     // Extract and format the messages for saving
     const conversationHistory = result.messages.map(message => {
@@ -142,7 +154,7 @@ const main = async () => {
         filePath,
         JSON.stringify({
             id: filename, // TODO: Consider using MongoDB ObjectId for _id instead of filename
-            candidateName: "Yvo",
+            candidateName: "Yvo", //TODO use the user name from mongodb
             timestamp: new Date().toISOString(),
             conversation: finalConversationHistory
         }, null, 2)
