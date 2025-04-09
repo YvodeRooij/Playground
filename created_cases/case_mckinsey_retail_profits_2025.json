@@ -1,0 +1,62 @@
+{
+  "_id": "case_mckinsey_retail_profits_2025",
+  "caseId": "case_mckinsey_retail_profits_2025",
+  "company": "McKinsey",
+  "title": "McKinsey RetailPro: Declining Department Store Profits",
+  "problemStatement": "Your client is RetailPro Inc., a large department store chain with 200 stores across North America. Despite stable overall revenue for the past three years, their net profit margin has declined from 8% to 4%. The CEO is concerned and has asked McKinsey to identify the root causes of the profit decline and recommend strategies to restore profitability.",
+  "dataPoints": {
+    "financials": [
+      { "year": 2022, "revenue": "5.0B", "netProfitMargin": 0.08 },
+      { "year": 2023, "revenue": "5.1B", "netProfitMargin": 0.06 },
+      { "year": 2024, "revenue": "5.0B", "netProfitMargin": 0.04 }
+    ],
+    "categoryPerformance": [
+      { "category": "Apparel", "revenueShare": 0.40, "marginTrend": "Declining Sharply" },
+      { "category": "Home Goods", "revenueShare": 0.25, "marginTrend": "Slightly Declining" },
+      { "category": "Cosmetics", "revenueShare": 0.15, "marginTrend": "Stable" },
+      { "category": "Electronics", "revenueShare": 0.10, "marginTrend": "Stable" },
+      { "category": "Other", "revenueShare": 0.10, "marginTrend": "Declining" }
+    ],
+    "costStructure": {
+      "cogs": "Increased by 5% over 3 years",
+      "sg&a": "Increased by 8% over 3 years (driven by marketing and store labor)",
+      "rent": "Stable"
+    },
+    "competitorInfo": [
+      { "competitor": "Online Retailers", "impact": "Increased price pressure, especially in Apparel" },
+      { "competitor": "Discount Stores", "impact": "Gaining share in Home Goods" }
+    ]
+  },
+  "contextForTheCase": {
+    "industryBackground": "Traditional department stores face significant pressure from online competition and changing consumer preferences. Many are struggling to maintain margins.",
+    "clientBackground": "RetailPro is known for its mid-range offerings and strong store presence but has been slow to adapt its e-commerce strategy. They recently invested heavily in store renovations.",
+    "keyConsiderations": [
+      "Profitability drivers (Revenue - COGS - Operating Expenses)",
+      "Impact of product mix on overall margin",
+      "Cost structure analysis (COGS, SG&A)",
+      "Competitive pressures (online, discounters)",
+      "Channel strategy (in-store vs. online)"
+    ]
+  },
+  "interviewerHints": {
+    "frameworkExpectations": "A profitability framework (Profit = Revenue - Costs) is essential. Break down revenue (price x volume) and costs (COGS, SG&A) further. Consider segmenting by product category or channel.",
+    "keyInsights": [
+      "Stable revenue hides underlying issues.",
+      "The sharp decline in Apparel margins is likely a major driver.",
+      "Both COGS and SG&A increases need investigation.",
+      "Competitive pressure is impacting pricing power."
+    ],
+    "strongAnswerElements": [
+      "Structured breakdown of profitability drivers.",
+      "Hypothesis-driven investigation into cost increases and margin declines.",
+      "Consideration of both internal factors (product mix, operations) and external factors (competition).",
+      "Actionable recommendations targeting specific levers (e.g., renegotiate supplier costs, optimize marketing spend, improve online channel)."
+    ]
+  },
+  "difficultyLevel": "Intermediate",
+  "estimatedDuration": "20-25 minutes",
+  "caseType": "Profitability Decline",
+  "industry": "Retail",
+  "lastUpdated": "2025-04-09",
+  "completedBy": [] 
+}

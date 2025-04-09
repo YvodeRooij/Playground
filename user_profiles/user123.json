@@ -1,0 +1,13 @@
+{
+  "userId": "user123",
+  "name": "Test User",
+  "background": "Software Engineering",
+  "preferences": {
+    "selectedFirm": "McKinsey"
+  },
+  "completedCaseIds": [
+    "case_mckinsey_autodrive_2025",
+    "case_mckinsey_retail_profits_2025",
+    "case_tech_engagement_drop_2025"
+  ]
+}
