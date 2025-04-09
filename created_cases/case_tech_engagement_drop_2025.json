@@ -1,0 +1,59 @@
+{
+  "_id": "case_tech_engagement_drop_2025",
+  "caseId": "case_tech_engagement_drop_2025", 
+  "company": "TechConsult", 
+  "title": "TechConnect: Declining User Engagement",
+  "problemStatement": "Your client is TechConnect, a popular social media platform with 50 million monthly active users (MAU). Over the past six months, key engagement metrics like daily active users (DAU) as a percentage of MAU, average time spent per session, and content interaction rates (likes, comments, shares per user) have all declined by 15-20%. Revenue, primarily ad-based, has started to follow this downward trend. The Head of Product has engaged your firm to diagnose the root cause of the engagement decline and recommend corrective actions.",
+  "dataPoints": {
+    "userMetrics": [
+      { "Month": -6, "MAU": "50M", "DAU/MAU": 0.55, "AvgTimePerSessionMin": 12, "InteractionsPerDAU": 8.5 },
+      { "Month": -3, "MAU": "51M", "DAU/MAU": 0.50, "AvgTimePerSessionMin": 10.5, "InteractionsPerDAU": 7.5 },
+      { "Month": 0, "MAU": "50.5M", "DAU/MAU": 0.45, "AvgTimePerSessionMin": 9.5, "InteractionsPerDAU": 6.8 }
+    ],
+    "featureLaunches": [
+      { "Month": -5, "Feature": "New Video Feed Algorithm" },
+      { "Month": -2, "Feature": "UI Redesign (Mobile)" }
+    ],
+    "competitorActivity": [
+      { "Competitor": "VidSphere", "Action": "Launched short-form video feature", "Month": -4 },
+      { "Competitor": "ConnectVerse", "Action": "Aggressive user acquisition campaign", "Month": -3 }
+    ],
+    "userFeedbackSummary": [
+      "Complaints about irrelevant content in video feed.",
+      "Mixed reactions to UI redesign - some find it confusing.",
+      "Users mentioning spending more time on competitor apps."
+    ]
+  },
+  "contextForTheCase": {
+    "industryBackground": "The social media landscape is highly competitive, with platforms constantly vying for user attention. Algorithm changes, new features, and competitor actions can significantly impact engagement.",
+    "clientBackground": "TechConnect's core strength has been its user-friendly interface and strong community features. They have recently tried to pivot more towards video content.",
+    "keyConsiderations": [
+      "Internal factors: Algorithm changes, UI/UX issues, bugs, feature fatigue.",
+      "External factors: Competitor actions, changing user preferences, platform fatigue.",
+      "Segmentation: Is the decline uniform across user demographics, regions, or platform (iOS/Android/Web)?",
+      "Correlation vs. Causation: Linking specific events (feature launches, competitor actions) to the engagement drop."
+    ]
+  },
+  "interviewerHints": {
+    "frameworkExpectations": "A structured approach segmenting potential causes (Internal vs. External, or Product/Tech vs. Market/Competition). Drill down into specific hypotheses within each segment.",
+    "keyInsights": [
+      "The timeline suggests potential links to the algorithm change and UI redesign.",
+      "Competitor actions, especially in video, are relevant.",
+      "User feedback provides qualitative clues.",
+      "Need to differentiate between correlation and causation."
+    ],
+    "strongAnswerElements": [
+      "Clear framework to structure the diagnosis.",
+      "Hypotheses linking potential causes to the observed metric declines.",
+      "Suggestions for data analysis (e.g., A/B test results, cohort analysis, user segmentation).",
+      "Consideration of both product/tech and market factors.",
+      "Actionable recommendations for diagnosis (e.g., specific analyses) and potential solutions (e.g., algorithm rollback/tuning, UI tweaks)."
+    ]
+  },
+  "difficultyLevel": "Intermediate",
+  "estimatedDuration": "20-25 minutes",
+  "caseType": "Diagnostic / Root Cause Analysis",
+  "industry": "Technology / Social Media",
+  "lastUpdated": "2025-04-09",
+  "completedBy": [] 
+}

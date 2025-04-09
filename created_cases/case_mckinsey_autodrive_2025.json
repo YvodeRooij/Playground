@@ -1,0 +1,199 @@
+{
+  "_id": "case_mckinsey_autodrive_2025",
+  "title": "McKinsey AutoDrive: Autonomous Vehicle Market Entry Strategy",
+  "problemStatement": "Your client is AutoTech Inc., a leading global automotive parts supplier with $25 billion in annual revenue. They are considering entering the autonomous vehicle (AV) technology market through either acquisition or organic growth. The CEO has asked McKinsey to evaluate the AV market opportunity, recommend whether to enter the market, and if so, determine the optimal entry strategy. You have been assigned to analyze this case and present your findings to the client's executive team.",
+  "dataPoints": {
+    "marketProjections": [
+      {
+        "year": 2025,
+        "globalAVSales": 450000,
+        "marketValueUSD": "30 billion"
+      },
+      {
+        "year": 2030,
+        "globalAVSales": 6500000,
+        "marketValueUSD": "220 billion" 
+      },
+      {
+        "year": 2035,
+        "globalAVSales": 21000000,
+        "marketValueUSD": "700 billion"
+      }
+    ],
+    "competitorLandscape": [
+      {
+        "company": "WayTech",
+        "marketShare": 0.28,
+        "foundedYear": 2016,
+        "valuation": "40 billion",
+        "keyTechnology": "LiDAR and computer vision"
+      },
+      {
+        "company": "AutonomX",
+        "marketShare": 0.22,
+        "foundedYear": 2015,
+        "valuation": "35 billion",
+        "keyTechnology": "AI decision systems"
+      },
+      {
+        "company": "DriveAI",
+        "marketShare": 0.18,
+        "foundedYear": 2018,
+        "valuation": "15 billion",
+        "keyTechnology": "Sensor fusion"
+      },
+      {
+        "company": "MobilityNext",
+        "marketShare": 0.12,
+        "foundedYear": 2019,
+        "valuation": "8 billion",
+        "keyTechnology": "Edge computing for AVs"
+      },
+      {
+        "company": "Others",
+        "marketShare": 0.20,
+        "foundedYear": null,
+        "valuation": null,
+        "keyTechnology": "Various"
+      }
+    ],
+    "acquisitionTargets": [
+      {
+        "company": "SensorTech",
+        "valuation": "2.5 billion",
+        "revenue": "300 million",
+        "growthRate": 0.45,
+        "patentPortfolio": 85,
+        "keyTechnology": "Advanced LiDAR"
+      },
+      {
+        "company": "AINav Systems",
+        "valuation": "1.8 billion",
+        "revenue": "220 million",
+        "growthRate": 0.35,
+        "patentPortfolio": 62,
+        "keyTechnology": "Navigation AI"
+      },
+      {
+        "company": "SafeDrive",
+        "valuation": "1.2 billion",
+        "revenue": "180 million",
+        "growthRate": 0.30,
+        "patentPortfolio": 45,
+        "keyTechnology": "Safety systems"
+      }
+    ],
+    "rndInvestment": [
+      {
+        "strategy": "Acquisition",
+        "initialInvestment": "2-3 billion",
+        "annualOngoing": "300-400 million",
+        "timeToMarket": "1-2 years"
+      },
+      {
+        "strategy": "Organic Growth",
+        "initialInvestment": "800 million",
+        "annualOngoing": "500-600 million",
+        "timeToMarket": "4-5 years"
+      },
+      {
+        "strategy": "Joint Venture",
+        "initialInvestment": "1-1.5 billion",
+        "annualOngoing": "350-450 million",
+        "timeToMarket": "2-3 years"
+      }
+    ],
+    "regulatoryLandscape": [
+      {
+        "region": "North America",
+        "approvalTimeline": "2-3 years",
+        "regulatoryBarriers": "Medium",
+        "liabilityFramework": "Developing"
+      },
+      {
+        "region": "Europe",
+        "approvalTimeline": "3-4 years",
+        "regulatoryBarriers": "High",
+        "liabilityFramework": "Strict"
+      },
+      {
+        "region": "Asia",
+        "approvalTimeline": "1-2 years",
+        "regulatoryBarriers": "Low to Medium",
+        "liabilityFramework": "Evolving"
+      }
+    ],
+    "clientCapabilities": {
+      "existingTechnologies": ["Advanced Driver Assistance Systems", "Radar Sensors", "Cameras"],
+      "patents": 120,
+      "rndBudget": "1.2 billion annually",
+      "engineeringTeam": 2800,
+      "softwareDevelopers": 850
+    }
+  },
+  "contextForTheCase": {
+    "industryBackground": "The autonomous vehicle market is experiencing rapid growth, driven by technological advancements in AI, sensors, and computing power. Major automotive manufacturers and tech companies are investing heavily in AV technology, with Level 3 and Level 4 autonomy becoming commercially viable. The market is expected to transform transportation, logistics, and urban mobility.",
+    
+    "clientBackground": "AutoTech Inc. is a Tier-1 automotive supplier with expertise in sensors, control systems, and safety components. They supply to most major global automotive manufacturers but have limited experience in software and AI development. The company has a strong balance sheet with $4 billion in cash reserves and access to debt financing. Their current product portfolio has steady but slowing growth, prompting interest in new growth avenues.",
+    
+    "keyConsiderations": [
+      "Market timing - when is the optimal time to enter the AV market?",
+      "Build vs. buy decision - should AutoTech develop capabilities internally or acquire?",
+      "Target segments - which AV components or systems align best with AutoTech's strengths?",
+      "Regional strategy - which geographic markets should be prioritized?",
+      "Risk assessment - regulatory, technological, and competitive risks",
+      "Return on investment - expected financial returns and timeline"
+    ],
+    
+    "recentDevelopments": [
+      "Three major acquisitions in the AV space in the past 6 months",
+      "New regulatory frameworks being developed in key markets",
+      "Breakthrough in sensor technology reducing costs by 40%",
+      "Major automotive OEMs announcing AV production targets",
+      "Rise in consumer acceptance of autonomous features"
+    ]
+  },
+  "interviewerHints": {
+    "frameworkExpectations": "Look for a structured approach that considers market attractiveness, competitive positioning, entry strategy options, and financial implications. A good framework should be comprehensive yet focused on the most critical decision factors.",
+    
+    "keyInsights": [
+      "The exponential market growth suggests timing is critical - too early risks burning cash, too late risks missing the opportunity",
+      "Client's hardware expertise but software gaps suggests potential for strategic partnerships or targeted acquisitions",
+      "High valuations in the space indicate potential risks of overpaying for acquisitions",
+      "Regulatory barriers vary significantly by region and should influence geographic prioritization",
+      "Return on investment timeline is likely longer than traditional auto components"
+    ],
+    
+    "strongAnswerElements": [
+      "Clear recommendation backed by data-driven analysis",
+      "Thoughtful market sizing and growth projections",
+      "Evaluation of multiple entry strategies with pros/cons analysis",
+      "Consideration of client's core competencies and gaps",
+      "Risk assessment and mitigation strategies",
+      "Implementation roadmap with clear milestones",
+      "Financial projections and ROI analysis"
+    ],
+    
+    "commonMistakes": [
+      "Focusing only on market size without considering competitive dynamics",
+      "Ignoring regulatory challenges and timeline implications",
+      "Treating acquisition as the only viable entry strategy",
+      "Not considering the client's existing capabilities and corporate culture",
+      "Overlooking technology integration challenges",
+      "Failing to prioritize between different AV technology segments"
+    ],
+    
+    "potentialFollowUpQuestions": [
+      "Which specific technology segment would you recommend focusing on?",
+      "How would you approach the valuation of potential acquisition targets?",
+      "What key milestones would you establish to measure success?",
+      "How might competitors respond to our market entry?",
+      "What partnership opportunities should we consider as alternatives to acquisition?"
+    ]
+  },
+  "difficultyLevel": "Advanced",
+  "estimatedDuration": "25-30 minutes",
+  "caseType": "Market Entry Strategy",
+  "industry": "Automotive Technology",
+  "lastUpdated": "2025-04-08"
+}
