@@ -29,17 +29,18 @@ We propose using six main collections:
     *   `contextForTheCase`: `Object`
     *   `interviewerHints`: `Object`
     *   `difficultyLevel`: `String` - **Index**
-    *   `caseType`: `String` - **Index**
-    *   `industry`: `String` - **Index**
+    *   `caseType`: `String` (e.g., "Market Entry", "PEI") - **Index**
+    *   `industry`: `String` (e.g., "Automotive Technology", "N/A" for PEI) - **Index**
+    *   `interviewStyle`: `String` (Optional, relevant for `caseType: "PEI"`, e.g., "interviewer-led", "candidate-led")
     *   `tags`: `Array<String>` - **Index (Multikey)**
     *   `createdAt`: `Date`
     *   `lastUpdatedAt`: `Date`
     *   `version`: `Number` (Optional)
-*   **Indexes:** Critical for filtering cases during selection (e.g., by company, difficulty, ensuring uniqueness).
+*   **Indexes:** Critical for filtering cases during selection (e.g., by company, difficulty, `caseType`, ensuring uniqueness).
 
 ### 2. `users` Collection
 
-*   **Purpose:** Stores user profile, preferences, current state, and references to related data. Read/written frequently. Designed to stay relatively small per document.
+*   **Purpose:** Stores user profile, preferences, current state, and progress tracking per firm. Read/written frequently.
 *   **Fields:**
     *   `_id`: `ObjectId` (Primary Key)
     *   `userId`: `String` (Unique identifier from auth system/generated) - **Index (Unique)**
@@ -47,18 +48,23 @@ We propose using six main collections:
     *   `name`: `String`
     *   `background`: `String`
     *   `preferences`: `Object`
-        *   `selectedFirm`: `String` - **Index**
+        *   `selectedFirm`: `String` (e.g., "mckinsey", matches `cases.company` but lowercase) - **Index**
         *   *(other preferences)*
-    *   `stats`: `Object` (Aggregated stats, updated periodically)
-        *   `completedInterviewCount`: `Number`
-        *   `completedPracticeSessionCount`: `Number`
-        *   `averageScore`: `Number`
+    *   `progress`: `Object` (Tracks progress per firm)
+        *   `<firmId>`: `Object` (Key is lowercase firm ID, e.g., "mckinsey")
+            *   `peiCompleted`: `Boolean` (Default: `false`)
+            *   `completedCaseIds`: `Array<String>` (List of standard `caseId`s completed for this firm)
+            *   `completedCaseCount`: `Number` (Optional: derived or stored count of standard cases)
+    *   `stats`: `Object` (Optional: Aggregated overall stats)
+        *   `totalInterviewsCompleted`: `Number`
+        *   `totalPracticeSessionsCompleted`: `Number`
     *   `currentLearningPlanId`: `ObjectId` (Ref to active plan in `learning_plans`) - **Index**
     *   `currentInterviewState`: `Object` (Optional, for resuming interviews)
     *   `currentPracticeSessionState`: `Object` (Optional, for resuming practice)
     *   `createdAt`: `Date`
     *   `lastLoginAt`: `Date`
-*   **Indexes:** Essential for user lookup and finding users by preference or active plan.
+*   **Indexes:** Essential for user lookup (`userId`, `email`). Index on `preferences.selectedFirm` useful. Indexing within the `progress` subdocument might be needed depending on query patterns (e.g., finding all users who completed PEI for a firm).
+*   **Update Strategy:** Use dot notation to update specific fields within the `progress.<firmId>` subdocument (e.g., `{$set: {"progress.mckinsey.peiCompleted": true}}`, `{$addToSet: {"progress.mckinsey.completedCaseIds": caseId}}`).
 
 ### 3. `interviews` Collection
 
@@ -123,4 +129,8 @@ We propose using six main collections:
 
 The application follows a cycle: User Preferences -> Interview (using `cases`) -> Save `interviews` -> Trigger Analysis -> Save `analyses` -> Trigger Learning Path -> Save `learning_plans`, Update `users` -> Trigger Practice -> Save `practice_sessions` -> Trigger Analysis -> Save `analyses` -> Trigger Learning Path/Orchestrator -> Loop or back to Interview.
 
-This schema provides a decoupled, scalable foundation for this workflow. The next step involves implementing the agent interactions and database operations within the application code.
+This schema provides a decoupled, scalable foundation for this workflow.
+
+**Note on Prompts:** The application uses different prompt templates (`prompt.ts`) based on the `caseType` and `interviewStyle` (for PEI) loaded from the `cases` collection to guide the interviewer agent's behavior appropriately.
+
+The next step involves implementing the agent interactions and database operations within the application code.

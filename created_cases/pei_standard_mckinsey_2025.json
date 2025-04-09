@@ -1,0 +1,58 @@
+{
+  "_id": "pei_standard_mckinsey_2025",
+  "caseId": "pei_standard_mckinsey_2025", 
+  "company": "McKinsey",
+  "title": "McKinsey Personal Experience Interview (PEI)",
+  "interviewStyle": "interviewer-led",
+  "caseType": "PEI", 
+  "problemStatement": "This is a Personal Experience Interview (PEI). The goal is to understand the candidate's past experiences and how they demonstrate key qualities like leadership, personal impact, entrepreneurial drive, and problem-solving in real-world situations. We also want to understand their motivations for consulting and joining McKinsey.",
+  "focusAreas": [
+    {
+      "competency": "Leadership",
+      "description": "Explore situations where the candidate led a team or influenced others towards a common goal, especially in challenging circumstances.",
+      "sampleQuestions": [
+        "Tell me about a time you led a team through a difficult challenge. What was the situation, what was your specific role, what actions did you take, and what was the outcome?",
+        "Describe a situation where you had to persuade a group to adopt your point of view. How did you approach it?",
+        "Give an example of a time you motivated a team or individual. What was the context?"
+      ]
+    },
+    {
+      "competency": "Personal Impact",
+      "description": "Understand instances where the candidate made a significant difference or achieved a challenging objective, overcoming obstacles.",
+      "sampleQuestions": [
+        "Tell me about your most significant accomplishment. What made it challenging, and what was your specific contribution?",
+        "Describe a time you faced a major setback or failure. How did you handle it, and what did you learn?",
+        "Give an example of a time you went above and beyond what was expected of you."
+      ]
+    },
+    {
+      "competency": "Entrepreneurial Drive",
+      "description": "Look for examples of initiative, creativity, and a proactive approach to identifying opportunities or solving problems.",
+      "sampleQuestions": [
+        "Tell me about a time you identified an opportunity for improvement and took the initiative to implement a change.",
+        "Describe a situation where you had to work with limited resources or information to achieve a goal.",
+        "Have you ever started something new (a project, club, business)? Tell me about that experience."
+      ]
+    },
+    {
+      "competency": "Motivation & Fit",
+      "description": "Assess the candidate's understanding of consulting, their reasons for choosing McKinsey, and their career aspirations.",
+      "sampleQuestions": [
+        "Why are you interested in management consulting?",
+        "Why {firm_name} specifically?",
+        "What do you see as the biggest challenges you might face as a consultant?",
+        "Where do you see your career heading in the next 5 years?"
+      ]
+    }
+  ],
+  "interviewerGuidance": {
+    "structure": "Typically explore 2-3 competency areas in depth, plus motivations. Start with broad questions and use follow-ups to probe deeper using the STAR method (Situation, Task, Action, Result).",
+    "evaluationFocus": "Evaluate the quality and relevance of examples, the candidate's specific actions and impact, their self-awareness and learning from experiences, communication clarity, and overall fit with McKinsey's values.",
+    "timing": "Allocate roughly 20-30 minutes for the PEI portion."
+  },
+  "difficultyLevel": "Standard",
+  "estimatedDuration": "20-30 minutes",
+  "industry": "N/A",
+  "lastUpdated": "2025-04-09",
+  "completedBy": [] 
+}
