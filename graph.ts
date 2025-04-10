@@ -7,10 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { State } from "./state";
 import dotenv from "dotenv";
 dotenv.config();
-import * as fs from 'fs/promises'; // Using fs/promises for loading case files and saving results
-import path from 'path'; // Using path for constructing file paths
-// TODO (DB): Add MongoDB driver import (e.g., import { MongoClient, Db, ObjectId } from 'mongodb';)
-
+// Unused file system imports (fs, path) removed.
+import { MongoClient, Db, ObjectId, Collection, Filter } from 'mongodb'; // MongoDB Driver Imports
+import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb"; // Correct Checkpointer Import
+import { MONGODB_URI, DATABASE_NAME } from './config'; // Import DB config
 // Define the structure for the case study data (matching state.ts is ideal)
 interface CaseStudyData {
     _id: string; // Or ObjectId if fetched from MongoDB directly
@@ -34,7 +34,7 @@ const model = new ChatOpenAI({
 const builder = new StateGraph(State);
 
 // Define the interviewer node - uses the model and interviewer prompt
-// TODO (DB): Consider if nodes need direct DB access or if all data should flow via state from main(). Passing state is generally preferred.
+// Note: Nodes currently don't access DB directly; data flows via state from main().
 async function interviewer(state: typeof State.State) {
     if (!state.caseStudy) {
         throw new Error("Case study data is missing from the state.");
@@ -76,13 +76,12 @@ async function interviewer(state: typeof State.State) {
 }
 
 // Define the candidate node - also uses the model but with candidate prompt
-// TODO (DB): Consider if nodes need direct DB access or if all data should flow via state from main().
+// Note: Nodes currently don't access DB directly.
 async function candidate(state: typeof State.State) {
 
-    // TODO (Simulate DB): Retrieve dynamic user info (name, background) passed via initial state from main().
-    // Example: const name = state.userName ?? "Candidate";
-    // Example: const background = state.userBackground ?? "a relevant background";
-    // Format the candidate prompt with necessary info
+    // TODO: Retrieve dynamic user info (e.g., user.name, user.background) from the loaded 'user' object in main()
+    //       and potentially pass it via the initial graph state if needed by nodes directly.
+    // Format the candidate prompt with necessary info (currently hardcoded using "Yvo")
 
 
     const candidateMessages = await candidatePrompt.formatMessages({
@@ -114,181 +113,137 @@ builder
 // Instantiate an in-memory checkpointer.
 // This allows the graph state to be saved at each step.
 // For production, you might use a persistent checkpointer (e.g., SqliteSaver, RedisSaver, or a custom one).
-const memory = new MemorySaver(); // TODO: Replace MemorySaver with a persistent checkpointer (e.g., using MongoDB) for production use cases.
+// MemorySaver instance removed, MongoDBSaver used below
 
 // Compile the graph with the checkpointer.
 // The checkpointer is responsible for saving and loading the state of the graph,
 // enabling persistence and resumption of graph executions.
-let graph = builder.compile({
-    checkpointer: memory,
-});
+// Graph compilation moved inside main() after checkpointer is initialized
 
-const main = async (userId: string = "user_placeholder_id", requestedCaseId?: string) => { // TODO: Pass actual userId and potentially a requested caseId
-    // TODO (DB): Establish MongoDB connection
-    // const client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017");
-    // await client.connect();
-    // const db: Db = client.db("interview_simulator_db"); // TODO: Use actual DB name
-    // const usersCollection = db.collection("users");
-    // const casesCollection = db.collection<CaseStudyData>("cases");
-    // const interviewsCollection = db.collection("interviews");
-    // const analysesCollection = db.collection("analyses");
-    // const learningPlansCollection = db.collection("learning_plans");
-    // const practiceSessionsCollection = db.collection("practice_sessions");
-    console.log("--- MongoDB Connection Placeholder ---"); // Placeholder
+// Custom MongoDBSaver class removed due to incompatibility with BaseCheckpointSaver interface
+const main = async (userId: string = "user_placeholder_id", requestedCaseId?: string) => { // TODO: Pass actual userId
+
+    // --- MongoDB Connection Setup ---
+    let client: MongoClient | null = null; // Initialize client as null
+    let db: Db;
+    let usersCollection: Collection;
+    let casesCollection: Collection<CaseStudyData>; // Use CaseStudyData type
+    let interviewsCollection: Collection;
+    // Define other collections if needed later (analyses, learning_plans, practice_sessions)
+
+    try {
+        client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        db = client.db(DATABASE_NAME);
+        usersCollection = db.collection("users");
+        casesCollection = db.collection<CaseStudyData>("cases");
+        interviewsCollection = db.collection("interviews");
+        console.log(`--- Successfully connected to MongoDB: ${DATABASE_NAME} ---`);
+
+        // --- Setup Checkpointer ---
+        const checkpointer = new MongoDBSaver({ client: client });
+        console.log("--- MongoDBSaver Checkpointer Initialized ---");
+
+        // --- Compile Graph ---
+        let graph = builder.compile({ checkpointer }); // Use MongoDBSaver
+        console.log("--- Graph Compiled with MongoDBSaver Checkpointer ---");
     // Define a unique identifier for this conversation thread.
     // Checkpointers use this ID to store and retrieve the state for a specific execution flow.
     // This allows multiple independent conversations to run concurrently using the same graph definition.
-    const threadId = uuidv4(); // Generate a unique ID for this run
-    const config = { configurable: { thread_id: threadId } };
 
-    // --- Load User Data ---
-    // TODO (DB): Fetch user data from `users` collection using userId.
-    // const user = await usersCollection.findOne({ userId: userId });
-    // if (!user) { console.error("User not found"); /* await client.close(); */ return; }
-    // TODO (DB): Fetch completed case IDs by querying `interviews` or `analyses` for this user, or potentially from a (less scalable) embedded list in `user`.
-    // Example (Querying interviews): const completedInterviews = await interviewsCollection.find({ userId: userId, status: "Completed" }).project({ caseId: 1 }).toArray();
-    // Example (Querying analyses): const completedAnalyses = await analysesCollection.find({ userId: userId, sourceType: "interview" }).project({ caseId: 1 }).toArray();
-    // const completedCaseIds = [...new Set(completedInterviews.map(i => i.caseId))]; // Get unique case IDs
-    console.log(`--- User Data Placeholder for ${userId} ---`); // Placeholder
-    const completedCaseIds: string[] = []; // Placeholder
+        // Define a unique identifier for this conversation thread.
+        // Checkpointers use this ID to store and retrieve the state for a specific execution flow.
+        // This allows multiple independent conversations to run concurrently using the same graph definition.
+        const threadId = uuidv4(); // Generate a unique ID for this run
+        const config = { configurable: { thread_id: threadId } };
 
-    // --- Select and Load Case Study ---
-    let caseData: CaseStudyData | null = null; // Initialize as null
-    let caseId: string | undefined = requestedCaseId;
+        // --- Load User Data ---
+        console.log(`Attempting to load user data for userId: ${userId}`);
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) }); // Find by ObjectId
 
-    // TODO (DB): Implement logic to select an appropriate case from `cases` collection using MongoDB.
-    // 1. Build query filter: Consider user preferences (e.g., `user.preferences.selectedFirm`), difficulty, etc.
-    // 2. Add `caseId: { $nin: completedCaseIds }` to the query filter to exclude completed cases.
-    // 3. If `requestedCaseId` is provided and not completed, prioritize fetching that specific case: `query.caseId = requestedCaseId`.
-    // 4. Fetch one matching case: `caseData = await casesCollection.findOne(query);`
-    // 5. Handle case where no suitable case is found.
-    // Example query:
-    // const query: Filter<CaseStudyData> = {
-    //     company: user.preferences.selectedFirm || "McKinsey", // Example preference
-    //     caseId: { $nin: completedCaseIds }
-    // };
-    // if (requestedCaseId && !completedCaseIds.includes(requestedCaseId)) {
-    //     query.caseId = requestedCaseId;
-    // }
-    // caseData = await casesCollection.findOne(query);
-
-    // --- Fallback to file system loading (TEMPORARY SIMULATION) ---
-    if (!caseData) {
-        console.warn("MongoDB case fetching not implemented or failed, falling back to file system simulation.");
-
-        // Simulate fetching user data and progress from file
-        let userProfile: any = { preferences: {}, progress: {} }; // Default structure
-        let firmProgress: { peiCompleted: boolean, completedCaseIds: string[] } = { peiCompleted: false, completedCaseIds: [] };
-        let selectedFirm: string | undefined = undefined;
-        const userProfilePath = path.join(process.cwd(), 'user_profiles', `${userId}.json`);
-
-        try {
-            const profileContent = await fs.readFile(userProfilePath, 'utf-8');
-            userProfile = JSON.parse(profileContent);
-            selectedFirm = userProfile?.preferences?.selectedFirm?.toLowerCase(); // Ensure lowercase
-            if (selectedFirm && userProfile?.progress?.[selectedFirm]) {
-                firmProgress = userProfile.progress[selectedFirm];
-            } else if (selectedFirm) {
-                 // Initialize progress for the selected firm if it doesn't exist
-                 userProfile.progress[selectedFirm] = firmProgress;
-            }
-            console.log(`Simulated loading user profile for ${userId}. Selected Firm: ${selectedFirm || 'None'}. PEI Completed: ${firmProgress.peiCompleted}. Completed Cases: ${firmProgress.completedCaseIds.join(', ') || 'None'}`);
-        } catch (error) {
-            console.error(`Failed to load user profile file from ${userProfilePath}, assuming new user/firm progress:`, error);
-            // If profile doesn't exist or firm not selected, defaults will apply
-            selectedFirm = "mckinsey"; // Default fallback firm for simulation
-            userProfile.preferences.selectedFirm = selectedFirm;
-            userProfile.progress[selectedFirm] = firmProgress;
+        if (!user) {
+            console.error(`User not found with userId: ${userId}`);
+            // Optionally create a new user entry here or handle as an error
+            return; // Exit if user not found
         }
+        console.log(`User data loaded successfully for ${user.name || userId}`);
+
+        // Extract preferences and progress
+        const selectedFirm: string | undefined = user.preferences?.selectedFirm?.toLowerCase();
+        const firmProgress = (selectedFirm && user.progress?.[selectedFirm])
+            ? user.progress[selectedFirm]
+            : { peiCompleted: false, completedCaseIds: [] }; // Default if no firm or progress for firm
+
+        const completedCaseIds: string[] = firmProgress.completedCaseIds || []; // Get completed IDs from user doc
+
+        console.log(`Selected Firm: ${selectedFirm || 'None'}. PEI Completed: ${firmProgress.peiCompleted}. Completed Cases: ${completedCaseIds.join(', ') || 'None'}`);
 
         if (!selectedFirm) {
-             console.error("User has no selected firm in profile. Cannot select a case.");
-             return;
+            console.error("User has no selected firm in profile. Cannot select a case.");
+            return;
         }
 
-        // --- Case Selection Logic ---
-        let selectedCaseFilePath: string | undefined = undefined;
-        const casesDir = path.join(process.cwd(), 'created_cases');
+        // --- Select and Load Case Study ---
+        let caseData: CaseStudyData | null = null; // Initialize as null
+        let caseId: string | undefined = undefined; // Initialize caseId as undefined
+        let query: Filter<CaseStudyData> = {}; // Initialize query object
 
-        if (!firmProgress.peiCompleted) {
-            // --- Select PEI Case ---
-            // Assume PEI caseId convention: pei_standard_{firm}_2025
-            const peiCaseId = `pei_standard_${selectedFirm}_2025`;
-            const peiFileName = `${peiCaseId}.json`;
-            const potentialPath = path.join(casesDir, peiFileName);
-            try {
-                await fs.access(potentialPath); // Check if file exists
-                selectedCaseFilePath = potentialPath;
-                caseId = peiCaseId;
-                console.log(`PEI not completed for ${selectedFirm}. Selecting PEI case: ${peiFileName}`);
-            } catch (peiError) {
-                 console.error(`PEI case file ${peiFileName} not found at ${potentialPath}. Cannot proceed with PEI.`);
-                 // Decide fallback? For now, error out or try standard cases? Let's try standard cases.
-                 console.warn("PEI file not found, attempting to select a standard case instead.");
-                 firmProgress.peiCompleted = true; // Mark PEI as 'skipped/unavailable' for this session
+        console.log("Selecting case study from MongoDB...");
+
+        // Prioritize requestedCaseId if provided and not completed
+        if (requestedCaseId && !completedCaseIds.includes(requestedCaseId)) {
+            console.log(`Attempting to load requested case: ${requestedCaseId}`);
+            query = { caseId: requestedCaseId, company: selectedFirm }; // Ensure it matches the firm too
+            caseData = await casesCollection.findOne(query);
+            if (caseData) {
+                console.log(`Successfully loaded requested case: ${caseData.title}`);
+                caseId = caseData.caseId; // Set caseId from loaded data
+            } else {
+                console.warn(`Requested case ${requestedCaseId} not found or doesn't match selected firm ${selectedFirm}. Proceeding with standard selection.`);
             }
         }
 
-        if (firmProgress.peiCompleted && !selectedCaseFilePath) {
-             // --- Select Standard Case ---
-             console.log(`PEI completed for ${selectedFirm}. Selecting standard case...`);
-             let availableCaseFiles: string[] = [];
-             try {
-                 availableCaseFiles = await fs.readdir(casesDir);
-             } catch (error) {
-                  console.error(`Failed to read created_cases directory at ${casesDir}:`, error);
-                  return; // Cannot proceed without cases
-             }
-
-             // Find first available, uncompleted, non-PEI case for the selected firm
-             for (const fileName of availableCaseFiles) {
-                 if (fileName.endsWith('.json') && !fileName.startsWith('pei_')) { // Basic check to exclude PEI by name
-                     const caseIdFromFile = fileName.replace('.json', '');
-                     // TODO: Ideally, load minimal metadata here instead of full file just to check company
-                     const tempCasePath = path.join(casesDir, fileName);
-                     try {
-                         const tempContent = await fs.readFile(tempCasePath, 'utf-8');
-                         const tempCaseData = JSON.parse(tempContent);
-
-                         if (tempCaseData.company?.toLowerCase() === selectedFirm &&
-                             !firmProgress.completedCaseIds.includes(caseIdFromFile))
-                         {
-                             selectedCaseFilePath = tempCasePath;
-                             caseId = caseIdFromFile;
-                             console.log(`Found available standard case: ${fileName}`);
-                             break; // Select the first one found
-                         }
-                     } catch (loadError) {
-                         console.warn(`Could not read/parse ${fileName} while searching for standard case:`, loadError);
-                     }
-                 }
-             }
-        }
-        // --- End Case Selection Logic ---
-
-
-        if (!selectedCaseFilePath || !caseId) {
-            console.error(`User ${userId} has completed all available standard cases for ${selectedFirm}, or no suitable cases found.`);
-            // await client.close(); // TODO (DB): Uncomment when DB connection is live
-            return; // Exit if no suitable case found
-        }
-
-        // Load the selected case file
-        try {
-            const caseContent = await fs.readFile(selectedCaseFilePath, 'utf-8');
-            caseData = JSON.parse(caseContent) as CaseStudyData;
-            // Ensure caseId field exists in the loaded data
-            if (caseData && !caseData.caseId) {
-                caseData.caseId = caseId;
+        // If no specific case requested or found, proceed with PEI/Standard logic
+        if (!caseData) {
+            if (!firmProgress.peiCompleted) {
+                // --- Select PEI Case ---
+                const peiCaseId = `pei_standard_${selectedFirm}_2025`;
+                console.log(`PEI not completed for ${selectedFirm}. Attempting to load PEI case: ${peiCaseId}`);
+                query = { caseId: peiCaseId, company: { $regex: `^${selectedFirm}$`, $options: 'i' } }; // Case-insensitive company match
+                caseData = await casesCollection.findOne(query);
+                if (caseData) {
+                    console.log(`Found PEI case: ${caseData.title}`);
+                    caseId = caseData.caseId;
+                } else {
+                    console.warn(`PEI case ${peiCaseId} not found for firm ${selectedFirm}. Marking PEI as 'skipped' for this session and attempting standard case.`);
+                    // Mark PEI as completed in memory for this session to select a standard case next
+                    firmProgress.peiCompleted = true;
+                    // Note: We don't update the DB here, only if the interview completes successfully later.
+                }
             }
-            console.log(`Loaded case study from file: ${caseData?.title} (ID: ${caseId})`);
-        } catch (error) {
-            console.error(`Failed to load selected case study from ${selectedCaseFilePath}:`, error);
-            // await client.close(); // TODO (DB): Uncomment when DB connection is live
-            return; // Exit if case loading fails
+
+            // --- Select Standard Case (if PEI completed or PEI not found) ---
+            if (firmProgress.peiCompleted && !caseData) {
+                console.log(`PEI completed or skipped for ${selectedFirm}. Selecting standard case...`);
+                query = {
+                    company: { $regex: `^${selectedFirm}$`, $options: 'i' }, // Case-insensitive match
+                    caseType: { $ne: 'PEI' }, // Exclude PEI cases
+                    caseId: { $nin: completedCaseIds } // Exclude already completed cases
+                };
+                // Find one standard case matching the criteria
+                // Optional: Add sorting logic here if needed (e.g., by difficulty, creation date)
+                caseData = await casesCollection.findOne(query);
+                if (caseData) {
+                    console.log(`Found available standard case: ${caseData.title}`);
+                    caseId = caseData.caseId;
+                } else {
+                    console.error(`User ${userId} has completed all available standard cases for ${selectedFirm}, or no suitable standard cases found.`);
+                    // No case found, return or throw error
+                    return;
+                }
+            }
         }
-    }
-    // --- End Fallback ---
+        // --- End MongoDB Case Selection ---
     // else { // Keep the problematic else block commented out
     //      // This block executes if caseData was potentially loaded from DB (currently placeholder)
     //      // Persistent TS 'type never' errors occurred within this block, even with guards.
@@ -307,7 +262,7 @@ const main = async (userId: string = "user_placeholder_id", requestedCaseId?: st
     // Check if caseData is loaded successfully before proceeding
     if (!caseData || !caseId) {
         console.error("Could not load or select a case study.");
-        // await client.close(); // TODO: Uncomment when DB connection is live
+        // Connection is closed in the finally block
         return;
     }
 // Log the type of interview starting (ONCE before invoking)
@@ -332,9 +287,10 @@ if (caseData.caseType === "PEI") {
 const initialState = {
     messages: [],
     caseStudy: caseData, // Pass the loaded data here
-    // TODO (Simulate DB): Pass necessary user info (name, background) into state if needed by nodes.
-    // userName: userProfile?.name, // Example using simulated profile
-    // userBackground: userProfile?.background, // Example
+    // TODO: Pass necessary user info (e.g., user.name, user.background) into the initial state
+    //       if nodes like 'candidate' or 'interviewer' need direct access to it.
+    // userName: user?.name, // Example
+    // userBackground: user?.background, // Example
 };
 const result = await graph.invoke(initialState, config);
 
@@ -374,97 +330,79 @@ const conversationHistory = result.messages.map(message => {
         return msg;
     });
 
-    // Create a filename with timestamp
-    // Modify the final saved object
-    const filename = `interview_${caseId}_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-    const interviewsDir = path.join(process.cwd(), 'interviews');
-    const filePath = path.join(interviewsDir, filename);
-    await fs.mkdir(interviewsDir, { recursive: true });
 
     const finalOutput = {
         // Use caseId or title for better identification
         interviewId: threadId, // Use threadId as unique interview ID
         caseStudyId: caseData.caseId, // Use caseId consistently
         caseStudyTitle: caseData.title,
-        // TODO (Simulate DB): Use actual user name from fetched/simulated user data
-        candidateName: /* user?.name ?? */ "Yvo", // Placeholder
+        // User name is now taken from the loaded 'user' object
+        candidateName: user?.name ?? "Unknown Candidate", // Use actual user name if available
         timestamp: new Date().toISOString(),
         conversation: finalConversationHistory // Assuming finalConversationHistory is correctly generated
     };
 
-    // --- Save Interview Transcript ---
-    // TODO (DB): Save transcript to `interviews` collection in MongoDB.
-    // const interviewDocument = {
-    //     threadId: threadId,
-    //     userId: userId,
-    //     caseId: caseId, // Use the actual caseId used
-    //     startedAt: new Date(initialState.messages[0]?.timestamp || Date.now()), // Approx start time
-    //     completedAt: new Date(),
-    //     status: "Completed", // Assuming completion if this point is reached
-    //     caseStudyTitle: caseData.title, // Denormalized for convenience
-    //     candidateName: finalOutput.candidateName, // Use name from finalOutput
-    //     conversation: finalConversationHistory
-    // };
-    // const insertResult = await interviewsCollection.insertOne(interviewDocument);
-    // const interviewId = insertResult.insertedId;
-    // console.log(`\nInterview saved to MongoDB with ID: ${interviewId}`);
-    // TODO (Workflow): Trigger Analysis Agent (pass interviewId)
+        // --- Save Interview Transcript to MongoDB ---
+        const interviewDocument = {
+            threadId: threadId,
+            userId: userId,
+            caseId: caseId, // Use the actual caseId used
+            // Estimate start time - might need refinement if precise start is needed
+            startedAt: new Date(Date.now() - (result.messages.length * 10000)), // Rough estimate
+            completedAt: new Date(),
+            status: "Completed", // Assuming completion if this point is reached
+            caseStudyTitle: caseData.title, // Denormalized for convenience
+            candidateName: finalOutput.candidateName, // Use name from finalOutput
+            conversation: finalConversationHistory
+        };
+        const insertResult = await interviewsCollection.insertOne(interviewDocument);
+        const interviewMongoId = insertResult.insertedId;
+        console.log(`\nInterview transcript saved to MongoDB with _id: ${interviewMongoId}`);
+        // TODO (Next Step): Trigger Analysis Agent (pass interviewMongoId or threadId)
+        // --- End Save Interview Transcript ---
 
-    // Keep file writing for now, or remove if switching completely
-    await fs.writeFile(filePath, JSON.stringify(finalOutput, null, 2));
-    console.log(`\nInterview using case '${caseData.title}' saved to ${filePath}`);
-    // --- End Save Interview Transcript ---
+        // --- Update User Progress in MongoDB ---
+        if (selectedFirm && caseId && caseData) {
+            try {
+                let updateOperation;
+                if (caseData.caseType === "PEI") {
+                    updateOperation = { $set: { [`progress.${selectedFirm}.peiCompleted`]: true } };
+                    console.log(`Updating user ${userId}: Setting PEI completed for firm ${selectedFirm}.`);
+                } else {
+                    updateOperation = { $addToSet: { [`progress.${selectedFirm}.completedCaseIds`]: caseId } };
+                    console.log(`Updating user ${userId}: Adding standard case ${caseId} to completed list for firm ${selectedFirm}.`);
+                }
 
-    // --- Update User Progress (Simulated - NOT SCALABLE) ---
-    // TODO (Simulate DB): Update user progress file based on the completed case type.
-    // **WARNING:** This file-based update is for simulation ONLY. It's NOT scalable and prone to race conditions.
-    const userProfilePath = path.join(process.cwd(), 'user_profiles', `${userId}.json`);
-    try {
-        // Re-read the profile just before writing
-        let profileToUpdate: any;
-        try {
-             const profileContent = await fs.readFile(userProfilePath, 'utf-8');
-             profileToUpdate = JSON.parse(profileContent);
-        } catch (readError) {
-             console.error(`Error reading profile ${userProfilePath} for update. Cannot save progress.`, readError);
-             throw readError; // Re-throw or handle more gracefully
-        }
+                const updateResult = await usersCollection.updateOne({ _id: new ObjectId(userId) }, updateOperation); // Find by ObjectId for update
 
-        const firm = profileToUpdate?.preferences?.selectedFirm?.toLowerCase();
-        if (profileToUpdate && firm && caseId && caseData) {
-             // Ensure progress object for the firm exists
-             if (!profileToUpdate.progress) profileToUpdate.progress = {};
-             if (!profileToUpdate.progress[firm]) profileToUpdate.progress[firm] = { peiCompleted: false, completedCaseIds: [] };
-
-             // Update based on case type
-             if (caseData.caseType === "PEI") {
-                 profileToUpdate.progress[firm].peiCompleted = true;
-                 console.log(`Marking PEI as completed for firm ${firm}.`);
-             } else {
-                 profileToUpdate.progress[firm].completedCaseIds = [...new Set([...(profileToUpdate.progress[firm].completedCaseIds || []), caseId])];
-                 console.log(`Adding standard case ${caseId} to completed list for firm ${firm}.`);
-             }
-
-             // Write the updated profile back
-             await fs.writeFile(userProfilePath, JSON.stringify(profileToUpdate, null, 2));
-             console.log(`Simulated update to ${userProfilePath}`);
+                if (updateResult.modifiedCount > 0 || updateResult.upsertedCount > 0 || updateResult.matchedCount > 0) {
+                    console.log(`Successfully updated progress for user ${userId}.`);
+                } else {
+                    // This might happen if the document exists but the value was already set (e.g., PEI already true, caseId already in array)
+                    console.log(`User progress for ${userId} already up-to-date or user not found for update (though user was loaded earlier).`);
+                }
+            } catch (updateError) {
+                console.error(`Failed to update user progress in MongoDB for user ${userId}:`, updateError);
+                // Decide if this error should halt the process or just be logged
+            }
         } else {
-             console.warn("Could not update user profile - missing profile, firm, caseId, or caseData.");
+            console.warn("Skipping user progress update - missing selectedFirm, caseId, or caseData.");
         }
+        // --- End Update User Progress ---
+
+
+
     } catch (error) {
-        console.error(`Simulated user profile update failed for ${userProfilePath}:`, error);
+        console.error("An error occurred during the interview process:", error);
+        // Handle specific errors if needed
+    } finally {
+        // --- Close DB Connection ---
+        if (client) {
+            await client.close();
+            console.log("--- MongoDB Connection Closed ---");
+        }
     }
-    // TODO (DB): Replace above simulation with atomic MongoDB updates using dot notation.
-    // Example PEI update: await usersCollection.updateOne({ userId: userId }, { $set: { [`progress.${firm}.peiCompleted`]: true } });
-    // Example Case update: await usersCollection.updateOne({ userId: userId }, { $addToSet: { [`progress.${firm}.completedCaseIds`]: caseId! } });
-    // --- End Update User Progress ---
-
-
-    // --- Close DB Connection ---
-    // TODO (DB): Close MongoDB connection gracefully
-    // await client.close();
-    console.log("--- MongoDB Connection Close Placeholder ---"); // Placeholder
 };
 
-// TODO (Simulate DB): Call main with actual userId, e.g., from command line args or environment variable
-main("user123").catch(console.error);
+// TODO: Pass actual userId to main() dynamically (e.g., from auth, command line args) instead of hardcoding "user123".
+main("676d95c23fdf0b5f5b7c8254").catch(console.error);
