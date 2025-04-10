@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 dotenv.config();
 // Unused file system imports (fs, path) removed.
 import { MongoClient, Db, ObjectId, Collection, Filter } from 'mongodb'; // MongoDB Driver Imports
+import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb"; // Correct Checkpointer Import
 import { MONGODB_URI, DATABASE_NAME } from './config'; // Import DB config
 // Define the structure for the case study data (matching state.ts is ideal)
 interface CaseStudyData {
@@ -112,15 +113,14 @@ builder
 // Instantiate an in-memory checkpointer.
 // This allows the graph state to be saved at each step.
 // For production, you might use a persistent checkpointer (e.g., SqliteSaver, RedisSaver, or a custom one).
-const memory = new MemorySaver(); // Using in-memory checkpointer for now.
+// MemorySaver instance removed, MongoDBSaver used below
 
 // Compile the graph with the checkpointer.
 // The checkpointer is responsible for saving and loading the state of the graph,
 // enabling persistence and resumption of graph executions.
-let graph = builder.compile({
-    checkpointer: memory,
-});
+// Graph compilation moved inside main() after checkpointer is initialized
 
+// Custom MongoDBSaver class removed due to incompatibility with BaseCheckpointSaver interface
 const main = async (userId: string = "user_placeholder_id", requestedCaseId?: string) => { // TODO: Pass actual userId
 
     // --- MongoDB Connection Setup ---
@@ -139,6 +139,14 @@ const main = async (userId: string = "user_placeholder_id", requestedCaseId?: st
         casesCollection = db.collection<CaseStudyData>("cases");
         interviewsCollection = db.collection("interviews");
         console.log(`--- Successfully connected to MongoDB: ${DATABASE_NAME} ---`);
+
+        // --- Setup Checkpointer ---
+        const checkpointer = new MongoDBSaver({ client: client });
+        console.log("--- MongoDBSaver Checkpointer Initialized ---");
+
+        // --- Compile Graph ---
+        let graph = builder.compile({ checkpointer }); // Use MongoDBSaver
+        console.log("--- Graph Compiled with MongoDBSaver Checkpointer ---");
     // Define a unique identifier for this conversation thread.
     // Checkpointers use this ID to store and retrieve the state for a specific execution flow.
     // This allows multiple independent conversations to run concurrently using the same graph definition.
